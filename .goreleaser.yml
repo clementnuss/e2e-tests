@@ -1,0 +1,42 @@
+version: 2
+
+project_name: e2e-tests
+
+before:
+  hooks:
+    - go mod tidy
+
+release:
+  disable: true
+builds:
+  - skip: true
+
+dockers_v2:
+  - images:
+      - "ghcr.io/clementnuss/e2e-tests"
+    tags:
+      - "{{ .Version }}"
+      - "latest"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    dockerfile: Dockerfile
+    extra_files:
+      - go.mod
+      - go.sum
+      - tests/
+    labels:
+      "org.opencontainers.image.title": "{{ .ProjectName }}"
+      "org.opencontainers.image.description": "E2E tests for Kubernetes cluster"
+      "org.opencontainers.image.url": "https://github.com/clementnuss/e2e-tests"
+      "org.opencontainers.image.source": "https://github.com/clementnuss/e2e-tests"
+      "org.opencontainers.image.version": "{{ .Version }}"
+      "org.opencontainers.image.created": "{{ .Date }}"
+      "org.opencontainers.image.revision": "{{ .FullCommit }}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
