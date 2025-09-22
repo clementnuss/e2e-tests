@@ -6,8 +6,6 @@ before:
   hooks:
     - go mod tidy
 
-release:
-  disable: true
 builds:
   - skip: true
 
