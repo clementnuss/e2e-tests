@@ -2,12 +2,11 @@ version: 2
 
 project_name: e2e-tests
 
-before:
-  hooks:
-    - go mod tidy
-
 builds:
   - skip: true
+
+release:
+  disable: true
 
 dockers_v2:
   - images:
