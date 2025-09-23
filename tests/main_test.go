@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"runtime/debug"
 	"testing"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
@@ -24,6 +25,9 @@ var (
 
 func TestMain(m *testing.M) {
 	var exitCode int
+
+	// Log build information
+	logBuildInfo()
 
 	// Initialize metrics
 	config := metrics.NewConfigFromEnv()
@@ -66,4 +70,44 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(exitCode)
+}
+
+// logBuildInfo logs version and build information using debug.ReadBuildInfo()
+func logBuildInfo() {
+	log.Printf("=== E2E Tests Starting ===")
+
+	if buildInfo, ok := debug.ReadBuildInfo(); ok {
+		log.Printf("Go version: %s", buildInfo.GoVersion)
+		log.Printf("Module path: %s", buildInfo.Main.Path)
+		if buildInfo.Main.Version != "(devel)" {
+			log.Printf("Module version: %s", buildInfo.Main.Version)
+		}
+
+		// Extract VCS information from build settings
+		var revision, time, modified string
+		for _, setting := range buildInfo.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				revision = setting.Value
+			case "vcs.time":
+				time = setting.Value
+			case "vcs.modified":
+				modified = setting.Value
+			}
+		}
+
+		if revision != "" {
+			log.Printf("Git revision: %s", revision)
+		}
+		if time != "" {
+			log.Printf("Git time: %s", time)
+		}
+		if modified == "true" {
+			log.Printf("Modified: true (uncommitted changes)")
+		}
+	} else {
+		log.Printf("Build info not available")
+	}
+
+	log.Printf("========================")
 }
