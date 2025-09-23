@@ -13,6 +13,13 @@ import (
 )
 
 func TestRealCluster(t *testing.T) {
+	start := time.Now()
+	var deploymentKey = any("deployment-key")
+
+	t.Cleanup(func() {
+		metricsCollector.RecordTestExecution(testContext, t, time.Since(start))
+	})
+
 	deploymentFeature := features.New("appsv1/deployment").
 		Setup(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 			// start a deployment
@@ -28,13 +35,10 @@ func TestRealCluster(t *testing.T) {
 			if err := cfg.Client().Resources().Get(ctx, "test-deployment", cfg.Namespace(), &dep); err != nil {
 				t.Fatal(err)
 			}
-			if &dep != nil {
-				t.Logf("deployment found: %s", dep.Name)
-			}
-			return context.WithValue(ctx, "test-deployment", &dep)
+			return context.WithValue(ctx, deploymentKey, &dep)
 		}).
 		Teardown(func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			dep := ctx.Value("test-deployment").(*appsv1.Deployment)
+			dep := ctx.Value(deploymentKey).(*appsv1.Deployment)
 			if err := cfg.Client().Resources().Delete(ctx, dep); err != nil {
 				t.Fatal(err)
 			}
