@@ -30,13 +30,13 @@ jobs:
 
       - name: Build test binary for amd64
         run: |
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go test ./tests/ -c -o e2e-tests-amd64
-          chmod +x e2e-tests-amd64
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go test ./tests/ -c -o bin/e2e-tests-amd64
+          chmod +x bin/e2e-tests-amd64
 
       - name: Build test binary for arm64
         run: |
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go test ./tests/ -c -o e2e-tests-arm64
-          chmod +x e2e-tests-arm64
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go test ./tests/ -c -o bin/e2e-tests-arm64
+          chmod +x bin/e2e-tests-arm64
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

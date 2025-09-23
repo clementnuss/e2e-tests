@@ -1,0 +1,44 @@
+version: "3"
+
+vars:
+  PROJECT_NAME: e2e-tests
+  BIN_DIR: bin
+  IMAGE_NAME: ghcr.io/clementnuss/e2e-tests
+
+env:
+  CGO_ENABLED: 0
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmd: task --list
+
+  test:
+    desc: Run tests locally (requires kubeconfig)
+    cmd: go test -v ./tests/
+
+  build:
+    desc: Build test binary for current platform
+    deps: [clean-bin]
+    cmd: go test ./tests/ -c -o {{.BIN_DIR}}/{{.PROJECT_NAME}}
+
+  build-linux:
+    desc: Build test binaries for Linux (amd64 and arm64)
+    deps: [clean-bin]
+    cmds:
+      - mkdir -p {{.BIN_DIR}}
+      - GOOS=linux GOARCH=amd64 go test ./tests/ -c -o {{.BIN_DIR}}/{{.PROJECT_NAME}}-amd64
+      - GOOS=linux GOARCH=arm64 go test ./tests/ -c -o {{.BIN_DIR}}/{{.PROJECT_NAME}}-arm64
+      - chmod +x {{.BIN_DIR}}/{{.PROJECT_NAME}}-*
+
+  release-snapshot:
+    desc: Create a snapshot release with GoReleaser
+    deps: [build-linux]
+    cmd: goreleaser release --snapshot --clean
+
+  clean:
+    desc: Clean all build artifacts
+    cmds:
+      - rm -rf {{.BIN_DIR}}
+      - rm -rf dist
+      - docker rmi {{.IMAGE_NAME}}:latest 2>/dev/null || true
