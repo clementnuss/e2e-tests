@@ -14,7 +14,7 @@ import (
 
 func TestRealCluster(t *testing.T) {
 	start := time.Now()
-	var deploymentKey = any("deployment-key")
+	deploymentKey := any("deployment-key")
 
 	t.Cleanup(func() {
 		metricsCollector.RecordTestExecution(testContext, t, time.Since(start))
@@ -58,7 +58,31 @@ func newDeployment(namespace string, name string, replicaCount int32) *appsv1.De
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"app": "test-app"}},
-				Spec:       corev1.PodSpec{Containers: []corev1.Container{{Name: "nginx", Image: "nginx"}}},
+				Spec: corev1.PodSpec{
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsNonRoot: &[]bool{true}[0],
+						RunAsUser:    &[]int64{65534}[0], // nobody user
+						FSGroup:      &[]int64{65534}[0],
+						SeccompProfile: &corev1.SeccompProfile{
+							Type: corev1.SeccompProfileTypeRuntimeDefault,
+						},
+					},
+					Containers: []corev1.Container{{
+						Name:  "nginx",
+						Image: "nginx:alpine",
+						SecurityContext: &corev1.SecurityContext{
+							AllowPrivilegeEscalation: &[]bool{false}[0],
+							RunAsNonRoot:             &[]bool{true}[0],
+							RunAsUser:                &[]int64{65534}[0],
+							Capabilities: &corev1.Capabilities{
+								Drop: []corev1.Capability{"ALL"},
+							},
+							SeccompProfile: &corev1.SeccompProfile{
+								Type: corev1.SeccompProfileTypeRuntimeDefault,
+							},
+						},
+					}},
+				},
 			},
 		},
 	}
