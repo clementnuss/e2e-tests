@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/features"
 )
 
-func TestRealCluster(t *testing.T) {
+func TestDeployment(t *testing.T) {
 	start := time.Now()
 	deploymentKey := any("deployment-key")
 
